@@ -1,0 +1,95 @@
+{
+
+"student": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "roll_no": {
+
+     "name" : "roll_no",
+     "required" : "true",
+     "type" : "String"
+     },
+    "email": {
+
+     "name" : "email",
+     "required" : "true",
+     "type" : "String"
+     },
+    "course_name": {
+
+     "name" : "course_name",
+     "required" : "true",
+     "type" : "String"
+     },
+    "course_url": {
+
+     "name" : "course_url",
+     "required" : "false",
+     "type" : "String"
+     },
+    "course_duration": {
+
+     "name" : "course_duration",
+     "required" : "true",
+     "type" : "String"
+     },
+    "platform": {
+
+     "name" : "platform",
+     "required" : "true",
+     "type" : "String"
+     },
+    "course_completion_date": {
+
+     "name" : "course_completion_date",
+     "required" : "true",
+     "type" : "String"
+     },
+    "upload_certificate": {
+
+     "name" : "upload_certificate",
+     "required" : "true",
+     "is_file" : "true",
+     "type" : "String"
+     },
+    "batch": {
+
+     "name" : "batch",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Batch" 
+      },
+     "type" : "String"
+     },
+    "course_mode": {
+
+     "name" : "course_mode",
+     "required" : "true",
+     "is_enum" : "true",
+      "possible_value" : "Course_mode",
+     "type" : "String"
+     },
+    "user_id": {
+
+     "name" : "user_id",
+     "required" : "true",
+     "foreign" : {
+      "resource" : "Users" 
+      },
+     "type" : "String"
+      }
+   
+  }
+ }
+
+}
+

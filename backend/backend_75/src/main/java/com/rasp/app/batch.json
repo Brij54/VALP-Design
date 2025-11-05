@@ -1,0 +1,32 @@
+{
+
+"batch": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "batch_name": {
+
+     "name" : "batch_name",
+     "required" : "true",
+     "type" : "String"
+     },
+    "no_of_courses": {
+
+     "name" : "no_of_courses",
+     "required" : "true",
+     "type" : "Long"
+      }
+   
+  }
+ }
+
+}
+

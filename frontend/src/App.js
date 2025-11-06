@@ -9,6 +9,7 @@ import Upload from "./components/Upload";
 import './App.css';
 import { Route, Routes } from 'react-router-dom';
 import Edit from './components/Edit/Edit';
+import CreateStudent from "./components/Resource/CreateStudent";
 
 
 
@@ -17,13 +18,13 @@ function App() {
     <Routes>
       
       <Route path='/edit' element={<Edit/>}/>
-      <Route path='/upload' element={<Upload />} />
-  <Route path='/records' element={<Records />} />
-  <Route path='/batch_config' element={<Batch_Config />} />
-  <Route path='/approve_reject_certificate' element={<Approve_Reject_Certificate />} />
-  <Route path='/registration' element={<Registration />}/>
-  <Route path='/login' element={<Login />}/>
-  <Route path='/edit/batch/:id' element={<BatchEdit />} />
+      <Route path='/upload' element={<CreateStudent />} />
+      <Route path='/records' element={<Records />} />
+      <Route path='/batch_config' element={<Batch_Config />} />
+      <Route path='/approve_reject_certificate' element={<Approve_Reject_Certificate />} />
+      <Route path='/registration' element={<Registration />}/>
+      <Route path='/login' element={<Login />}/>
+      <Route path='/edit/batch/:id' element={<BatchEdit />} />
     <Route path='/edit/student/:id' element={<StudentEdit />} />
   </Routes>
   );

@@ -1,0 +1,86 @@
+.formCard {
+  background: white;
+  padding: 28px;
+  height: calc(100vh - 80px); /* adjust 80px based on your header height */
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin: 0;
+  overflow-y: auto; /* scroll only inside the form if needed */
+}
+
+
+.sectionTitle {
+  margin-bottom: 18px;
+  color: #333;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 30px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formLabel {
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #444;
+}
+
+.required {
+  color: red;
+  margin-right: 4px;
+}
+
+.formControl {
+  border: 1px solid #dcdcdc;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+}
+
+.formControl:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.buttonRow {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.primaryBtn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 22px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.primaryBtn:hover {
+  background-color: #005dc1;
+}
+
+.secondaryBtn {
+  background-color: #f0f0f0;
+  color: #333;
+  border: none;
+  padding: 8px 22px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.secondaryBtn:hover {
+  background-color: #e0e0e0;
+}

@@ -156,9 +156,13 @@ const { data: metaData, isLoading, error } = useQuery({
   return (
   <div>
   <div>
-    <div id="id-4D" className="d-flex flex-column border border-2 p-2 gap-2 mb-2"><div className="border-0 fw-bold fs-3" id="id-4F">Batch</div><div className="border-0 fw-bold" id="id-4J">batch_name *</div><input type="text" className="form-control" name="batch_name" required={true} value={dataToSave["batch_name"] || ""} onChange={(e) => setDataToSave({ ...dataToSave, ["batch_name"]: e.target.value }) }
-/><div className="border-0 fw-bold" id="id-4P">no_of_courses *</div><input type="text" className="form-control" name="no_of_courses" required={true} value={dataToSave["no_of_courses"] || ""} onChange={(e) => setDataToSave({ ...dataToSave, ["no_of_courses"]: e.target.value }) }
-/><button className="btn btn-success" id="id-4T" onClick={handleCreate}>Submit</button></div>
+    {/* <div id="id-4D" className="d-flex flex-column border border-2 p-2 gap-2 mb-2"> */}
+      {/* <div className="border-0 fw-bold fs-3" id="id-4F">Batch</div> */}
+    <div className="border-0 fw-bold" id="id-4J">batch_name *</div>
+    <input type="text" className="form-control mb-4" name="batch_name" required={true} value={dataToSave["batch_name"] || ""} onChange={(e) => setDataToSave({ ...dataToSave, ["batch_name"]: e.target.value }) }
+/><div className="border-0 fw-bold" id="id-4P">no_of_courses *</div><input type="text" className="form-control mb-4" name="no_of_courses" required={true} value={dataToSave["no_of_courses"] || ""} onChange={(e) => setDataToSave({ ...dataToSave, ["no_of_courses"]: e.target.value }) }
+/><button className="btn btn-success" id="id-4T" onClick={handleCreate}>Submit</button>
+{/* </div> */}
     {showToast && (
       <div
         className="toast-container position-fixed top-20 start-50 translate-middle p-3"

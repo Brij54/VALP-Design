@@ -52,15 +52,24 @@ export default function Sidebar({
         <div className="navMenu">
           <button
             className="navItem"
-            onClick={() => navigate("/Page1")}
+            onClick={() => navigate("/upload")}
           >
             <span className="navIcon">🏠</span>
             <span className="navText">
-              Dashboard
+              Home
             </span>
           </button>
+          <button
+            className="navItem"
+            onClick={() => navigate("/records")}
+          >
+            <span className="navIcon">🏠</span>
+            <span className="navText">
+              Student Records
+            </span>
+          </button>
+          </div>
         </div>
-      </div>
     </>
   );
 }

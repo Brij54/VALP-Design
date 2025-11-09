@@ -67,6 +67,13 @@ export default function Sidebar({
             <span className="navIcon">📄</span>
             <span className="navText">Approve Reject Certificate</span>
           </button>
+          <button
+            className="navItem"
+            onClick={() => navigate("/generate")}
+          >
+            <span className="navIcon">📄</span>
+            <span className="navText">Generate Certificate</span>
+          </button>
         </div>
       </div>
     </>

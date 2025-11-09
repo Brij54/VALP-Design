@@ -57,6 +57,7 @@ import Approve_Reject_Certificate from "./components/Approve_Reject_Certificate"
 import StudentEdit from "./components/Edit/StudentEdit";
 import BatchEdit from "./components/Edit/BatchEdit";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Generate from "./components/Generate";
 
 function App() {
   return (
@@ -89,6 +90,14 @@ function App() {
         element={
           <ProtectedRoute requiredRoles={["admin"]}>
             <Batch_Config />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/generate"
+        element={
+          <ProtectedRoute requiredRoles={["admin"]}>
+            <Generate />
           </ProtectedRoute>
         }
       />

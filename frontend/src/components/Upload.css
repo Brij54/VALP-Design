@@ -925,4 +925,28 @@ hr, .border-line, .divider {
   box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
 }
 
+
+}
+.studentFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  column-gap: 32px;  /* horizontal spacing between columns */
+  row-gap: 18px;     /* vertical spacing between rows */
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+}
+
+/* If any field should span full width across both columns */
+.formField.fullWidth {
+  grid-column: 1 / -1;
+}
+
+/* Mobile: fall back to 1 column */
+@media (max-width: 768px) {
+  .studentFormGrid {
+    grid-template-columns: 1fr;
+  }
 }

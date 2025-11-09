@@ -25,7 +25,7 @@
 import React, { useState } from "react";
 import "./Approve_Reject_Certificate.css";
 import "./Upload.css";                 // ⬅️ layout + sidebar styles (page12Container, mainContent, etc.)
-import Sidebar from "./Utils/SidebarAdmin"; // ⬅️ normal Sidebar component
+import Sidebar from "./Utils/Sidebar"; // ⬅️ normal Sidebar component
 import UpdateStudent from "./Resource/UpdateStudent";
 import ReadStudent from "./Resource/ReadStudent";
 
@@ -51,7 +51,8 @@ export default function Records() {
         //       <div
         id="id-21"
         className="d-flex flex-column border border-2 p-2  gap-2 mb-2"
-      >
+      > 
+      <h3 className="mb-3" style={{ color: "white" }}>Student Records</h3>
         <ReadStudent />
       </div>
 

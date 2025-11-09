@@ -1,0 +1,19 @@
+{
+
+"course_mode": {
+
+  "purpose" : "POSSIBLE_VALUE",
+  "values" : {
+    "Offline": {
+
+     "id":"Offline", 
+      "name":"Offline" 
+   },
+    "Online": {
+
+     "id":"Online", 
+      "name":"Online" 
+   }
+}
+}
+}

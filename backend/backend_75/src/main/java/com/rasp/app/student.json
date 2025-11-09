@@ -78,6 +78,12 @@
       "possible_value" : "Course_mode",
      "type" : "String"
      },
+
+    "status": {
+      "name": "status",
+      "required": "false",
+      "type": "Boolean"
+    },
     "user_id": {
 
      "name" : "user_id",

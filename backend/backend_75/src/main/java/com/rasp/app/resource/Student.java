@@ -47,6 +47,7 @@ import com.rasp.app.service.*;
 	private String upload_certificate = null;
 	private String batch = null;
 	private String course_mode = null;
+	private Boolean status = null;
 	private String user_id = null;
 	private Map<String, Object> extra_data = null;
 
@@ -71,6 +72,7 @@ import com.rasp.app.service.*;
 	public static String FIELD_UPLOAD_CERTIFICATE = "upload_certificate";
 	public static String FIELD_BATCH = "batch";
 	public static String FIELD_COURSE_MODE = "course_mode";
+	public static String FIELD_STATUS = "status";
 	public static String FIELD_USER_ID = "user_id";
 	public static String FIELD_EXTRA_DATA = "extra_data";
 
@@ -170,6 +172,9 @@ import com.rasp.app.service.*;
 		course_modeField.setRequired(true);
 		metaData.addField(course_modeField);
 
+		Field statusField = new Field("status", "Boolean");
+		metaData.addField(statusField);
+
 		Field user_idField = new Field("user_id", "String");
 		user_idField.setRequired(true);
 		user_idField.setForeign(new Foreign("Users"));
@@ -210,6 +215,7 @@ import com.rasp.app.service.*;
 		this.upload_certificate = obj.upload_certificate;
 		this.batch = obj.batch;
 		this.course_mode = obj.course_mode;
+		this.status = obj.status;
 		this.user_id = obj.user_id;
 		this.extra_data = obj.extra_data;
 	}
@@ -268,6 +274,8 @@ import com.rasp.app.service.*;
 			map.put("batch", batch);
 		if(course_mode != null)
 			map.put("course_mode", course_mode);
+		if(status != null)
+			map.put("status", status);
 		if(user_id != null)
 			map.put("user_id", user_id);
 		if(extra_data != null)
@@ -318,6 +326,8 @@ import com.rasp.app.service.*;
 			map.put("batch", batch);
 		if(validateCourse_mode(add))
 			map.put("course_mode", course_mode);
+		if(status != null)
+			map.put("status", status);
 		if(validateUser_id(add))
 			map.put("user_id", user_id);
 		if(extra_data != null)
@@ -352,6 +362,7 @@ import com.rasp.app.service.*;
 		upload_certificate = (String) map.get("upload_certificate");
 		batch = (String) map.get("batch");
 		course_mode = (String) map.get("course_mode");
+		status = (Boolean) map.get("status");
 		user_id = (String) map.get("user_id");
 		extra_data = (Map<String, Object>) map.get("extra_data");
 	}
@@ -441,6 +452,10 @@ import com.rasp.app.service.*;
 		Object course_modeObj = map.get("course_mode");
 		if(course_modeObj != null)
 			course_mode = course_modeObj.toString();
+
+		Object statusObj = map.get("status");
+		if(statusObj != null)
+			status = new Boolean(statusObj.toString());
 
 		Object user_idObj = map.get("user_id");
 		if(user_idObj != null)
@@ -856,6 +871,18 @@ import com.rasp.app.service.*;
 		if(add && course_mode == null)
 			throw new ApplicationException(ExceptionSeverity.ERROR, "Requierd validation Failed[course_mode]");
 		return course_mode != null;
+	}
+
+	public Boolean getStatus() {
+		return status;
+	}
+
+	public void setStatus(Boolean status) {
+		this.status = status;
+	}
+
+	public void unSetStatus() {
+		this.status = null;
 	}
 
 	public String getUser_id() {

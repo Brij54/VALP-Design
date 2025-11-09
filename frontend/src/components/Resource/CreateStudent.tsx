@@ -347,11 +347,23 @@ const CreateStudent = () => {
                   type="file"
                   name="upload_certificate"
                   required
-                  onChange={(e) =>
-                    setDataToSave({
-                      ...dataToSave,
-                      upload_certificate: e.target.files?.[0] || null,
-                    })
+                  onChange={(e) =>{
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const maxSizeMB = 5; // ✅ Set your limit here
+                      const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+                      if (file.size > maxSizeBytes) {
+                        alert(`File size exceeds ${maxSizeMB} MB limit.`);
+                        e.target.value = ""; // Clear the file input
+                        return;
+                      }
+                      setDataToSave({
+                        ...dataToSave,
+                        upload_certificate: e.target.files?.[0] || null,
+                      })
+                    }
+                  }
                   }
                 />
               </div>

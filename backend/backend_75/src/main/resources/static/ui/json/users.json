@@ -1,33 +1,32 @@
 {
-  "users" : {
-    "cluster" : "traveler_db",
 
-    "api" : true,
-    "display_name" : "users",
-    "menu_content" : "setup",
-    "blocks": {
-      "course" : {
-        "title": "users Details",
-        "order": 1
+"users": {
+
+  "cluster" : "rasp_db",
+  "ui" : false,
+  "api" : true,
+  "fields" : {
+    "id": {
+
+     "name" : "id",
+     "required" : "true",
+     "type" : "String"
+     },
+    "user_name": {
+
+     "name" : "user_name",
+     "required" : "true",
+     "type" : "String"
+     },
+    "user_email": {
+
+     "name" : "user_email",
+     "required" : "true",
+     "type" : "String"
       }
-    },
-    "fields" : {
-      "id": {
-        "index": true,
-        "name": "id",
-        "required": true,
-        "type": "String"
-      },
-      "user_name": {
-        "name": "user_name",
-        "type": "String",
-        "required": true
-      },
-      "user_email": {
-        "name": "user_email",
-        "type": "String",
-        "required": true
-      }
-    }
+   
   }
+ }
+
 }
+

@@ -762,6 +762,249 @@
 // export default UpdateStudent;
 
 
+// import React, { useState, useEffect, useMemo } from 'react';
+// import { useNavigate } from "react-router-dom";
+// import apiConfig from '../../config/apiConfig';
+// import { AllCommunityModule, ModuleRegistry } from "ag-grid-community";
+// import { AgGridReact } from "ag-grid-react";
+// import { useQuery } from '@tanstack/react-query';
+
+// ModuleRegistry.registerModules([AllCommunityModule]);
+
+// interface Student {
+//   id: string;
+//   email: string;
+//   batch: string;
+//   user_id?: string;
+//   status?: boolean | string;
+//   upload_certificate?: string;
+//   batch_name?: string;
+//   [key: string]: any;
+// }
+
+// interface ColumnDef {
+//   field: string;
+//   headerName: string;
+//   editable: boolean;
+//   resizable: boolean;
+//   sortable: boolean;
+//   filter: boolean;
+//   cellRenderer?: (params: any) => React.ReactNode;
+// }
+
+// const getCookie = (name: string): string | null => {
+//   const value = `; ${document.cookie}`;
+//   const parts = value.split(`; ${name}=`);
+//   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+//   return null;
+// };
+
+// const UpdateStudent: React.FC = () => {
+//   const [rowData, setRowData] = useState<Student[]>([]);
+//   const [showToast, setShowToast] = useState(false);
+
+//   const navigate = useNavigate();
+//   const regex = /^(g_|archived|extra_data)/;
+
+//   // --- Fetch students data ---
+//   const { data: dataRes, isFetching } = useQuery({
+//     queryKey: ['resourceData', 'student'],
+//     queryFn: async () => {
+//       const params = new URLSearchParams();
+//       params.append("queryId", "GET_ALL");
+
+//       const accessToken = getCookie("access_token");
+//       if (!accessToken) throw new Error("Access token not found");
+
+//       const response = await fetch(`${apiConfig.getResourceUrl('student')}?${params.toString()}`, {
+//         method: "GET",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${accessToken}`,
+//         },
+//         credentials: "include",
+//       });
+
+//       if (!response.ok) throw new Error("Error: " + response.status);
+
+//       return await response.json();
+//     },
+//     refetchOnWindowFocus: true,
+//   });
+
+//   // --- Status badge ---
+//   const getStatusBadge = (status: any) => {
+//     if (status === "Approved" || status === true)
+//       return <span className="badge bg-success text-white">✅ Approved</span>;
+//     if (status === "Rejected" || status === false)
+//       return <span className="badge bg-danger text-white">❌ Rejected</span>;
+//     return <span className="badge bg-secondary text-white">⏳ Pending</span>;
+//   };
+
+//   // --- Enrich student data with batch_name ---
+//   useEffect(() => {
+//     if (!dataRes) return;
+
+//     const fetchBatchNames = async () => {
+//       const students: Student[] = dataRes.resource || [];
+//       const accessToken = getCookie("access_token");
+//       if (!accessToken) return;
+
+//       const batchMap: Record<string, string> = {};
+//       const uniqueBatches = Array.from(new Set(students.map(s => s.batch)));
+
+//       await Promise.all(uniqueBatches.map(async (batch) => {
+//         try {
+//           const params = new URLSearchParams({ queryId: "GET_NAME_BY_BATCH" });
+//           params.append("args", `batch:${batch}`);
+
+//           const response = await fetch(`${apiConfig.getResourceUrl("student")}?${params.toString()}`, {
+//             headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+//             credentials: "include",
+//           });
+
+//           if (response.ok) {
+//             const data = await response.json();
+//             const resources = data.resource || [];
+//             const batchRes = resources.find((r: any) => r.name || r.batch_name);
+//             batchMap[batch] = batchRes?.name || batchRes?.batch_name || "Unknown";
+//           } else {
+//             batchMap[batch] = "Unknown";
+//           }
+//         } catch (err) {
+//           console.error("Error fetching batch:", err);
+//           batchMap[batch] = "Unknown";
+//         }
+//       }));
+
+//       const enrichedRows = students.map(student => ({
+//         ...student,
+//         batch_name: batchMap[student.batch] || "Unknown"
+//       }));
+
+//       setRowData(enrichedRows);
+//     };
+
+//     fetchBatchNames();
+//   }, [dataRes]);
+
+//   // --- Define columns ---
+//   const colDef1: ColumnDef[] = useMemo(() => {
+//     if (!rowData.length) return [];
+
+//     const fieldsToUse = Object.keys(rowData[0])
+//       .filter(key => !regex.test(key) && key !== "id" && key !== "user_id");
+
+//     const cols: ColumnDef[] = fieldsToUse.map(field => {
+//       if (field === "status") 
+//         return { field, headerName: "Status", editable: false, resizable: true, sortable: true, filter: true, cellRenderer: (params) => getStatusBadge(params.value) };
+
+//       if (field === "upload_certificate") {
+//         return {
+//           field,
+//           headerName: "Upload Certificate",
+//           editable: false,
+//           resizable: true,
+//           sortable: true,
+//           filter: true,
+//           cellRenderer: (params: any) => {
+//             const documentId = params.value;
+//             const userId = params.data.user_id;
+//             const handleDownload = async (e: any) => {
+//               e.stopPropagation();
+//               const accessToken = getCookie("access_token");
+//               try {
+//                 const url = `${apiConfig.API_BASE_URL}/student?document_id=${documentId}&queryId=GET_DOCUMENT&dmsRole=admin&user_id=${userId}`;
+//                 const response = await fetch(url, {
+//                   method: "GET",
+//                   headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+//                   credentials: "include",
+//                 });
+//                 if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+//                 const blob = await response.blob();
+//                 const downloadUrl = window.URL.createObjectURL(blob);
+//                 const a = document.createElement("a");
+//                 a.href = downloadUrl;
+//                 const filename =
+//                   response.headers.get("Content-Disposition")?.split("filename=")[1]?.replace(/['"]/g, "") || "downloaded_file";
+//                 a.download = filename;
+//                 document.body.appendChild(a);
+//                 a.click();
+//                 a.remove();
+//                 window.URL.revokeObjectURL(downloadUrl);
+//               } catch (error) {
+//                 console.error("Error downloading file:", error);
+//               }
+//             };
+//             return <button onClick={handleDownload} style={{ backgroundColor: "#1976d2", color: "white", border: "none", borderRadius: "4px", padding: "4px 8px", cursor: "pointer" }}>Download</button>;
+//           }
+//         };
+//       }
+
+//       return { field, headerName: field, editable: false, resizable: true, sortable: true, filter: true };
+//     });
+
+//     // --- Insert batch_name right after email ---
+//     if (!cols.find(c => c.field === "batch_name")) {
+//       const emailIndex = cols.findIndex(c => c.field === "email");
+//       const batchCol = { headerName: "Batch", field: "batch_name", editable: false, resizable: true, sortable: true, filter: true };
+//       if (emailIndex >= 0) cols.splice(emailIndex + 1, 0, batchCol);
+//       else cols.push(batchCol);
+//     }
+
+//     // Action column
+//     cols.push({
+//       headerName: "Action",
+//       field: "action",
+//       cellRenderer: (params: any) => <button className="btn btn-primary btn-sm" onClick={() => navigate(`/edit/student/${params.data.id}`)}>Edit</button>,
+//       editable: false,
+//       resizable: true,
+//       sortable: false,
+//       filter: false,
+//     });
+
+//     return cols;
+//   }, [rowData]);
+
+//   const defaultColDef = { flex: 1, minWidth: 100, editable: false };
+
+//   if (isFetching) return <div>Loading...</div>;
+
+//   return (
+//     <div>
+//       {rowData.length === 0 ? (
+//         <div>No student data available.</div>
+//       ) : (
+//         <div className="ag-theme-alpine" style={{ height: 500, width: '100%' }}>
+//           <AgGridReact
+//             rowData={rowData}
+//             columnDefs={colDef1}
+//             defaultColDef={defaultColDef}
+//             pagination
+//             paginationPageSize={10}
+//             animateRows
+//           />
+//         </div>
+//       )}
+
+//       {showToast && (
+//         <div className="toast-container position-fixed top-20 start-50 translate-middle p-3" style={{ zIndex: 9999 }}>
+//           <div className="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+//             <div className="toast-header">
+//               <strong className="me-auto">Success</strong>
+//               <button type="button" className="btn-close" onClick={() => setShowToast(false)}></button>
+//             </div>
+//             <div className="toast-body text-success text-center">Updated successfully!</div>
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default UpdateStudent;
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
 import apiConfig from '../../config/apiConfig';
@@ -826,7 +1069,6 @@ const UpdateStudent: React.FC = () => {
       });
 
       if (!response.ok) throw new Error("Error: " + response.status);
-
       return await response.json();
     },
     refetchOnWindowFocus: true,
@@ -893,7 +1135,8 @@ const UpdateStudent: React.FC = () => {
     if (!rowData.length) return [];
 
     const fieldsToUse = Object.keys(rowData[0])
-      .filter(key => !regex.test(key) && key !== "id" && key !== "user_id");
+      // 🧹 Remove batch so it doesn’t appear
+      .filter(key => !regex.test(key) && key !== "id" && key !== "user_id" && key !== "batch");
 
     const cols: ColumnDef[] = fieldsToUse.map(field => {
       if (field === "status") 
@@ -947,7 +1190,14 @@ const UpdateStudent: React.FC = () => {
     // --- Insert batch_name right after email ---
     if (!cols.find(c => c.field === "batch_name")) {
       const emailIndex = cols.findIndex(c => c.field === "email");
-      const batchCol = { headerName: "Batch", field: "batch_name", editable: false, resizable: true, sortable: true, filter: true };
+      const batchCol = { 
+        headerName: "Batch Name", 
+        field: "batch_name", 
+        editable: false, 
+        resizable: true, 
+        sortable: true, 
+        filter: true 
+      };
       if (emailIndex >= 0) cols.splice(emailIndex + 1, 0, batchCol);
       else cols.push(batchCol);
     }

@@ -11,6 +11,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import platform.db.Expression;
 import platform.db.REL_OP;
+import platform.db.ResourceMetaData;
 import platform.decorator.BaseDecorator;
 import platform.resource.BaseResource;
 import platform.util.ApplicationException;
@@ -102,7 +103,6 @@ public class StudentDecorator extends BaseDecorator {
         }
 
         if ("GENERATE_VALP_CERTIFICATE".equalsIgnoreCase(queryId)) {
-
             String rollNo = (String) map.get(Student.FIELD_ROLL_NO);
             if (rollNo == null || rollNo.trim().isEmpty()) {
                 throw new ApplicationException(ExceptionSeverity.ERROR, "Roll number is required");
@@ -124,8 +124,59 @@ public class StudentDecorator extends BaseDecorator {
                     public String getCluster() { return "rasp_db"; }
                     @Override
                     public String getClusterType() { return "replica"; }
+
+                    // ✅ Dynamic MetaData logic here
                     @Override
-                    public platform.db.ResourceMetaData getMetaData() { return null; }
+                    public platform.db.ResourceMetaData getMetaData() {
+                        try {
+                            com.rasp.app.controller.MetaDataController controller = new com.rasp.app.controller.MetaDataController();
+                            List<com.rasp.app.resource.MetaDataDto> metaList = controller.processMetadata("ValpCertificate");
+
+                            if (metaList != null && !metaList.isEmpty()) {
+                                com.rasp.app.resource.MetaDataDto dto = metaList.get(0);
+
+                                platform.db.ResourceMetaData meta = new platform.db.ResourceMetaData(dto.getResource());
+                                meta.setCluster("rasp_db");
+                                meta.setClusterType("replica");
+
+                                for (Map<String, Object> field : dto.getFieldValues()) {
+                                    String name = (String) field.get("name");
+                                    String type = (String) field.get("type");
+
+                                    if (name != null && type != null) {
+                                        try {
+                                            // Try method with (String, String)
+                                            java.lang.reflect.Method addFieldStringMethod =
+                                                    meta.getClass().getMethod("addField", String.class, String.class);
+                                            addFieldStringMethod.invoke(meta, name, type);
+                                        } catch (NoSuchMethodException e1) {
+                                            try {
+                                                // Try alternative signature: addField(Map)
+                                                java.lang.reflect.Method addFieldMapMethod =
+                                                        meta.getClass().getMethod("addField", Map.class);
+                                                Map<String, Object> fieldMap = new HashMap<>();
+                                                fieldMap.put("name", name);
+                                                fieldMap.put("type", type);
+                                                addFieldMapMethod.invoke(meta, fieldMap);
+                                            } catch (Exception e2) {
+                                                System.err.println("⚠️ Skipped field " + name + ": could not add via reflection (" + e2.getMessage() + ")");
+                                            }
+                                        } catch (Exception e) {
+                                            System.err.println("⚠️ Unexpected error adding field: " + e.getMessage());
+                                        }
+                                    }
+                                }
+
+                                return meta;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                        return null;
+                    }
+
+
                     @Override
                     public void convertTypeUnsafePrimaryMapToResource(Map<String, Object> map) {}
                 };
@@ -144,11 +195,6 @@ public class StudentDecorator extends BaseDecorator {
                         "Failed to generate certificate: " + e.getMessage());
             }
         }
-
-
-
-
-
 
         return super.getQuery(ctx,queryId,map,service);
     }

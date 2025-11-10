@@ -27,7 +27,7 @@
 //         //       <div
 //         id="id-21"
 //         className="d-flex flex-column border border-2 p-2  gap-2 mb-2"
-//       > 
+//       >
 //       <h3 className="mb-3" style={{ color: "white" }}>Student Records</h3>
 //         <ReadStudent />
 //       </div>
@@ -114,35 +114,38 @@ export default function Generate() {
 
   // 🔹 called only when backend said eligible === true
   const handleGenerateCertificate = async () => {
-     const token = getCookie("access_token");
-  const params = new URLSearchParams({
-    queryId: "GENERATE_VALP_CERTIFICATE",
-    args: `roll_no:${rollNo}`,
-  });
+    const token = getCookie("access_token");
+    const params = new URLSearchParams({
+      queryId: "GENERATE_VALP_CERTIFICATE",
+      args: `roll_no:${rollNo}`,
+    });
 
-  const res = await fetch(`${apiConfig.getResourceUrl("student")}?${params}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  const data = await res.json();
-  const pdfBase64 = data?.[0]?.fileData;
-  const fileName = data?.[0]?.fileName;
-
-  if (pdfBase64) {
-    const blob = new Blob(
-      [Uint8Array.from(atob(pdfBase64), c => c.charCodeAt(0))],
-      { type: "application/pdf" }
+    const res = await fetch(
+      `${apiConfig.getResourceUrl("student")}?${params}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     );
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  } else {
-    alert("Certificate generation failed!");
-  }
+
+    const data = await res.json();
+    const pdfBase64 = data?.[0]?.fileData;
+    const fileName = data?.[0]?.fileName;
+
+    if (pdfBase64) {
+      const blob = new Blob(
+        [Uint8Array.from(atob(pdfBase64), (c) => c.charCodeAt(0))],
+        { type: "application/pdf" }
+      );
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } else {
+      alert("Certificate generation failed!");
+    }
   };
 
   return (
@@ -153,121 +156,141 @@ export default function Generate() {
         activeSection="dashboard"
       />
 
+      {/* Main Content */}
       <main
         className={`mainContent ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}
       >
-        <div
-          id="id-21"
-          className="d-flex flex-column border border-2 p-3 gap-3 mb-2 bg-white rounded"
-        >
-          <h3 className="mb-3" style={{ color: "white" }}>
-            Student Records
-          </h3>
+        <header className="contentHeader d-flex justify-content-between align-items-center mb-4">
+          <h1 className="pageTitle">Upload VALP Certificate</h1>
+          <div className="userProfile d-flex align-items-center">
+            <div className="profileCircle">
+              <span className="profileInitial">S</span>
+            </div>
+          </div>
+        </header>
 
-          {/* Roll number input + button */}
-          <form
-            onSubmit={handleCheck}
-            className="d-flex flex-wrap align-items-center gap-2 mb-3"
+        {/* Centered content wrapper */}
+        <div className="d-flex justify-content-center">
+          <div
+            id="id-21"
+            className="d-flex flex-column border border-2 p-4 gap-3 mb-4 bg-white rounded shadow-sm"
+            style={{
+              width: "95%", // increased width (was 80%)
+              maxWidth: "1700px", // gives more breathing space on large screens
+            }}
           >
-            <label className="form-label mb-0">
-              Roll Number:
-              <input
-                type="text"
-                className="form-control ms-2"
-                value={rollNo}
-                onChange={(e) => setRollNo(e.target.value)}
-                placeholder="Enter roll number (e.g. MT2023154)"
-              />
-            </label>
+            <h3 className="mb-3 text-dark fw-bold">Student Records</h3>
 
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={loading}
+            {/* Roll number input + button */}
+            <form
+              onSubmit={handleCheck}
+              className="d-flex flex-wrap align-items-center gap-3 mb-3"
             >
-              {loading ? "Checking..." : "Check Eligibility"}
-            </button>
-          </form>
+              <div className="d-flex align-items-center">
+                <label className="form-label mb-0 me-2">Roll Number:</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={rollNo}
+                  onChange={(e) => setRollNo(e.target.value)}
+                  placeholder="Enter roll number (e.g. MT2023154)"
+                  style={{ width: "250px" }}
+                />
+              </div>
 
-          {/* Error message */}
-          {error && (
-            <div className="alert alert-danger py-2" role="alert">
-              {error}
-            </div>
-          )}
+              <button
+                type="submit"
+                className="btn btn-primary px-4"
+                disabled={loading}
+              >
+                {loading ? "Checking..." : "Check Eligibility"}
+              </button>
+            </form>
 
-          {/* Eligibility result */}
-          {eligible !== null && !loading && (
-            <div className="mb-2">
-              {eligible ? (
-                <span className="badge bg-success me-2">
-                  ✅ Eligible (completed required number of courses)
-                </span>
-              ) : (
-                <span className="badge bg-danger">
-                  ❌ Not Eligible (has not completed required number of courses)
-                </span>
-              )}
+            {/* Error message */}
+            {error && (
+              <div className="alert alert-danger py-2" role="alert">
+                {error}
+              </div>
+            )}
 
-              {/* 🔥 Show Generate Certificate button ONLY when backend says true */}
-              {eligible === true && (
-                <button
-                  className="btn btn-success ms-3"
-                  onClick={handleGenerateCertificate}
-                >
-                  Generate Certificate
-                </button>
-              )}
-            </div>
-          )}
+            {/* Eligibility result */}
+            {eligible !== null && !loading && (
+              <div className="mb-3">
+                {eligible ? (
+                  <span className="badge bg-success me-3 fs-6">
+                    ✅ Eligible (completed required number of courses)
+                  </span>
+                ) : (
+                  <span className="badge bg-danger fs-6">
+                    ❌ Not Eligible (has not completed required number of
+                    courses)
+                  </span>
+                )}
 
-          {/* Records table */}
-          {records.length > 0 && (
-            <div className="table-responsive mt-3">
-              <table className="table table-sm table-striped table-bordered">
-                <thead>
-                  <tr>
-                    <th>id</th>
-                    <th>roll_no</th>
-                    <th>email</th>
-                    <th>batch</th>
-                    <th>course_name</th>
-                    <th>course_duration</th>
-                    <th>platform</th>
-                    <th>course_completion_date</th>
-                    <th>course_mode</th>
-                    <th>status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map((r) => (
-                    <tr key={r.id}>
-                      <td>{r.id}</td>
-                      <td>{r.roll_no}</td>
-                      <td>{r.email}</td>
-                      <td>{r.batch}</td>
-                      <td>{r.course_name}</td>
-                      <td>{r.course_duration}</td>
-                      <td>{r.platform}</td>
-                      <td>{r.course_completion_date}</td>
-                      <td>{r.course_mode}</td>
-                      <td>
-                        {r.status === true
-                          ? "approved"
-                          : r.status === false
-                          ? "rejected"
-                          : "pending"}
-                      </td>
+                {/* Show Generate Certificate button ONLY when eligible */}
+                {eligible === true && (
+                  <button
+                    className="btn btn-success ms-3 px-4"
+                    onClick={handleGenerateCertificate}
+                  >
+                    Generate Certificate
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Records Table */}
+            {records.length > 0 && (
+              <div className="table-responsive mt-3">
+                <table className="table table-striped table-bordered align-middle text-center">
+                  <thead className="table-dark">
+                    <tr>
+                      <th>Roll No</th>
+                      <th>Email</th>
+                      <th>Batch</th>
+                      <th>Course Name</th>
+                      <th>Course Duration</th>
+                      <th>Platform</th>
+                      <th>Completion Date</th>
+                      <th>Course Mode</th>
+                      <th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {records.map((r) => (
+                      <tr key={r.id}>
+                        <td>{r.roll_no}</td>
+                        <td>{r.email}</td>
+                        <td>{r.batch}</td>
+                        <td>{r.course_name}</td>
+                        <td>{r.course_duration}</td>
+                        <td>{r.platform}</td>
+                        <td>{r.course_completion_date}</td>
+                        <td>{r.course_mode}</td>
+                        <td>
+                          {r.status === true
+                            ? "approved"
+                            : r.status === false
+                            ? "rejected"
+                            : "pending"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
-          {eligible === false && records.length === 0 && !loading && !error && (
-            <div>No VALP records found for this roll number.</div>
-          )}
+            {eligible === false &&
+              records.length === 0 &&
+              !loading &&
+              !error && (
+                <div className="text-muted">
+                  No VALP records found for this roll number.
+                </div>
+              )}
+          </div>
         </div>
       </main>
     </div>

@@ -1,8 +1,10 @@
 package com.rasp.app.decorator;
 
+import com.rasp.app.controller.MetaDataController;
 import com.rasp.app.helper.BatchHelper;
 import com.rasp.app.helper.StudentHelper;
 import com.rasp.app.resource.Batch;
+import com.rasp.app.resource.MetaDataDto;
 import com.rasp.app.resource.Student;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -16,6 +18,7 @@ import platform.decorator.BaseDecorator;
 import platform.resource.BaseResource;
 import platform.util.ApplicationException;
 import platform.util.ExceptionSeverity;
+import platform.util.Field;
 import platform.webservice.BaseService;
 import platform.webservice.ServletContext;
 
@@ -121,64 +124,66 @@ public class StudentDecorator extends BaseDecorator {
                     @Override
                     public void convertPrimaryMapToResource(Map<String, Object> map) {}
                     @Override
+                    public void convertTypeUnsafePrimaryMapToResource(Map<String, Object> map) {}
+
+                    @Override
                     public String getCluster() { return "rasp_db"; }
+
                     @Override
                     public String getClusterType() { return "replica"; }
 
-                    // ✅ Dynamic MetaData logic here
                     @Override
                     public platform.db.ResourceMetaData getMetaData() {
                         try {
-                            com.rasp.app.controller.MetaDataController controller = new com.rasp.app.controller.MetaDataController();
-                            List<com.rasp.app.resource.MetaDataDto> metaList = controller.processMetadata("ValpCertificate");
+                            MetaDataController controller = new MetaDataController();
+                            List<MetaDataDto> metaList = controller.processMetadata("ValpCertificate");
 
-                            if (metaList != null && !metaList.isEmpty()) {
-                                com.rasp.app.resource.MetaDataDto dto = metaList.get(0);
+                            if (metaList == null || metaList.isEmpty()) {
+                                System.err.println("⚠️ No metadata found for ValpCertificate");
+                                return fallbackMeta();
+                            }
 
-                                platform.db.ResourceMetaData meta = new platform.db.ResourceMetaData(dto.getResource());
-                                meta.setCluster("rasp_db");
-                                meta.setClusterType("replica");
+                            MetaDataDto dto = metaList.get(0);
+                            String resourceName = dto.getResource();
+                            if (resourceName == null || resourceName.trim().isEmpty()) {
+                                System.err.println("⚠️ Resource name is missing in MetaDataDto");
+                                return fallbackMeta();
+                            }
 
-                                for (Map<String, Object> field : dto.getFieldValues()) {
-                                    String name = (String) field.get("name");
-                                    String type = (String) field.get("type");
+                            ResourceMetaData meta = new ResourceMetaData(resourceName);
+                            meta.setCluster("rasp_db");
+                            meta.setClusterType("replica");
 
-                                    if (name != null && type != null) {
-                                        try {
-                                            // Try method with (String, String)
-                                            java.lang.reflect.Method addFieldStringMethod =
-                                                    meta.getClass().getMethod("addField", String.class, String.class);
-                                            addFieldStringMethod.invoke(meta, name, type);
-                                        } catch (NoSuchMethodException e1) {
-                                            try {
-                                                // Try alternative signature: addField(Map)
-                                                java.lang.reflect.Method addFieldMapMethod =
-                                                        meta.getClass().getMethod("addField", Map.class);
-                                                Map<String, Object> fieldMap = new HashMap<>();
-                                                fieldMap.put("name", name);
-                                                fieldMap.put("type", type);
-                                                addFieldMapMethod.invoke(meta, fieldMap);
-                                            } catch (Exception e2) {
-                                                System.err.println("⚠️ Skipped field " + name + ": could not add via reflection (" + e2.getMessage() + ")");
-                                            }
-                                        } catch (Exception e) {
-                                            System.err.println("⚠️ Unexpected error adding field: " + e.getMessage());
-                                        }
+                            for (Map<String, Object> field : dto.getFieldValues()) {
+                                String name = (String) field.get("name");
+                                String type = (String) field.get("type");
+
+                                if (name != null && type != null) {
+                                    try {
+                                        Field fieldObj = new Field();
+                                        fieldObj.setName(name);
+                                        fieldObj.setType(type);
+                                        meta.addField(fieldObj); // ✅ Correct usage with Field object
+                                    } catch (Exception e) {
+                                        System.err.println("⚠️ Failed to add field " + name + ": " + e.getMessage());
                                     }
                                 }
-
-                                return meta;
                             }
+
+
+                            return meta;
                         } catch (Exception e) {
                             e.printStackTrace();
+                            return fallbackMeta();
                         }
-
-                        return null;
                     }
 
-
-                    @Override
-                    public void convertTypeUnsafePrimaryMapToResource(Map<String, Object> map) {}
+                    private ResourceMetaData fallbackMeta() {
+                        ResourceMetaData meta = new ResourceMetaData("ValpCertificate");
+                        meta.setCluster("rasp_db");
+                        meta.setClusterType("replica");
+                        return meta;
+                    }
                 };
 
                 Map<String, Object> mapRes = new HashMap<>();

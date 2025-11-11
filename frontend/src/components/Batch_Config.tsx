@@ -38,13 +38,13 @@ export default function Batch_Config() {
           <section className="createStudentSection">
             {/* Create Batch block */}
             <div className="pageFormContainer mb-4">
-              <h2 className="fw-semibold mb-3">Create Batch</h2>
+              <h2 className="fw-semibold mb-3">Add New Batch</h2>
               <CreateBatch />
             </div>
 
             {/* Update Batch block */}
             <div className="pageFormContainer">
-              <h2 className="fw-semibold mb-3">Update Batch</h2>
+              <h2 className="fw-semibold mb-3">List Of Batches</h2>
               <UpdateBatch />
             </div>
           </section>

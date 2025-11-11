@@ -21,6 +21,7 @@ import platform.util.ExceptionSeverity;
 import platform.util.Field;
 import platform.webservice.BaseService;
 import platform.webservice.ServletContext;
+import java.text.SimpleDateFormat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -206,83 +207,85 @@ public class StudentDecorator extends BaseDecorator {
 
     private byte[] generateValpCertificate(ServletContext ctx, String rollNo)
             throws IOException, ApplicationException {
-
-        BaseResource[] records = StudentHelper.getInstance()
-                .getByExpression(new Expression(Student.FIELD_ROLL_NO, REL_OP.EQ, rollNo));
-
-        if (records == null || records.length == 0) {
-            throw new ApplicationException(ExceptionSeverity.ERROR, "No student records found for roll no " + rollNo);
-        }
-
-        List<Student> approved = Arrays.stream(records)
-                .map(r -> (Student) r)
-                .filter(s -> Boolean.TRUE.equals(s.getStatus()))
-                .collect(Collectors.toList());
-
-        if (approved.isEmpty()) {
-            throw new ApplicationException(ExceptionSeverity.ERROR, "No approved certificates for roll no " + rollNo);
-        }
-
-        Student first = approved.get(0);
-        String studentName = Optional.ofNullable(first.getName()).orElse("Student");
-        String rollNumber = first.getRoll_no();
-
-        try (InputStream template = getClass().getClassLoader()
-                .getResourceAsStream("templates/certificate_format.pdf")) {
-
-            if (template == null)
-                throw new ApplicationException(ExceptionSeverity.ERROR, "Certificate template not found in classpath");
-
-            try (PDDocument document = PDDocument.load(template);
-                 ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-
-                PDPage page = document.getPage(0);
-                PDPageContentStream cs = new PDPageContentStream(document, page,
-                        PDPageContentStream.AppendMode.APPEND, true, true);
-
-                // Student name + roll number
-                cs.beginText();
-                cs.setFont(PDType1Font.HELVETICA_BOLD, 14);
-                cs.newLineAtOffset(140, 470);
-                cs.showText(studentName + " (" + rollNumber + ")");
-                cs.endText();
-
-                // Table of approved courses
-                float startY = 355;
-                float rowHeight = 18;
-                float xSNo = 85;
-                float xCourse = 150;
-                float xDate = 470;
-
-                cs.setFont(PDType1Font.HELVETICA, 12);
-
-                int index = 1;
-                for (Student s : approved) {
-                    float y = startY - (index - 1) * rowHeight;
-
-                    cs.beginText();
-                    cs.newLineAtOffset(xSNo, y);
-                    cs.showText(index + ".");
-                    cs.endText();
-
-                    cs.beginText();
-                    cs.newLineAtOffset(xCourse, y);
-                    cs.showText(s.getCourse_name());
-                    cs.endText();
-
-                    cs.beginText();
-                    cs.newLineAtOffset(xDate, y);
-                    cs.showText(s.getCourse_completion_date());
-                    cs.endText();
-
-                    index++;
-                }
-
-                cs.close();
-                document.save(baos);
-                return baos.toByteArray();
-            }
-        }
+//
+//        BaseResource[] records = StudentHelper.getInstance()
+//                .getByExpression(new Expression(Student.FIELD_ROLL_NO, REL_OP.EQ, rollNo));
+//
+//        if (records == null || records.length == 0) {
+//            throw new ApplicationException(ExceptionSeverity.ERROR, "No student records found for roll no " + rollNo);
+//        }
+//        SimpleDateFormat sdf = new SimpleDateFormat("dd-MMM-yyyy"); // e.g., 07-Nov-2025
+//
+//        List<Student> approved = Arrays.stream(records)
+//                .map(r -> (Student) r)
+//                .filter(s -> Boolean.TRUE.equals(s.getStatus()))
+//                .collect(Collectors.toList());
+//
+//        if (approved.isEmpty()) {
+//            throw new ApplicationException(ExceptionSeverity.ERROR, "No approved certificates for roll no " + rollNo);
+//        }
+//
+//        Student first = approved.get(0);
+//        String studentName = Optional.ofNullable(first.getName()).orElse("Student");
+//        String rollNumber = first.getRoll_no();
+//
+//        try (InputStream template = getClass().getClassLoader()
+//                .getResourceAsStream("templates/certificate_format.pdf")) {
+//
+//            if (template == null)
+//                throw new ApplicationException(ExceptionSeverity.ERROR, "Certificate template not found in classpath");
+//
+//            try (PDDocument document = PDDocument.load(template);
+//                 ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+//
+//                PDPage page = document.getPage(0);
+//                PDPageContentStream cs = new PDPageContentStream(document, page,
+//                        PDPageContentStream.AppendMode.APPEND, true, true);
+//
+//                // Student name + roll number
+//                cs.beginText();
+//                cs.setFont(PDType1Font.HELVETICA_BOLD, 14);
+//                cs.newLineAtOffset(140, 470);
+//                cs.showText(studentName + " (" + rollNumber + ")");
+//                cs.endText();
+//
+//                // Table of approved courses
+//                float startY = 355;
+//                float rowHeight = 18;
+//                float xSNo = 85;
+//                float xCourse = 150;
+//                float xDate = 470;
+//
+//                cs.setFont(PDType1Font.HELVETICA, 12);
+//
+//                int index = 1;
+//                for (Student s : approved) {
+//                    float y = startY - (index - 1) * rowHeight;
+//
+//                    cs.beginText();
+//                    cs.newLineAtOffset(xSNo, y);
+//                    cs.showText(index + ".");
+//                    cs.endText();
+//
+//                    cs.beginText();
+//                    cs.newLineAtOffset(xCourse, y);
+//                    cs.showText(s.getCourse_name());
+//                    cs.endText();
+//
+//                    cs.beginText();
+//                    cs.newLineAtOffset(xDate, y);
+//                    cs.showText(s.getCourse_completion_date());
+//                    cs.endText();
+//
+//                    index++;
+//                }
+//
+//                cs.close();
+//                document.save(baos);
+//                return baos.toByteArray();
+//            }
+//        }
+    return null;
     }
 
 }

@@ -161,7 +161,7 @@ const { data: metaData, isLoading, error } = useQuery({
     <div className="border-0 fw-bold" id="id-4J">batch_name *</div>
     <input type="text" className="form-control mb-4" name="batch_name" required={true} value={dataToSave["batch_name"] || ""} onChange={(e) => setDataToSave({ ...dataToSave, ["batch_name"]: e.target.value }) }
 /><div className="border-0 fw-bold" id="id-4P">no_of_courses *</div><input type="text" className="form-control mb-4" name="no_of_courses" required={true} value={dataToSave["no_of_courses"] || ""} onChange={(e) => setDataToSave({ ...dataToSave, ["no_of_courses"]: e.target.value }) }
-/><button className="btn btn-success" id="id-4T" onClick={handleCreate}>Submit</button>
+/><button className="btn btn-success" id="id-4T" onClick={handleCreate}>Add Batch</button>
 {/* </div> */}
     {showToast && (
       <div

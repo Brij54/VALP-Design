@@ -10,8 +10,7 @@
 package com.rasp.app.resource;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import platform.exception.ExceptionEnum;
- import platform.resource.BaseResource;
+import platform.resource.BaseResource;
 import platform.util.*;
 import org.springframework.stereotype.Component;
 import platform.db.*;
@@ -43,7 +42,7 @@ import com.rasp.app.service.*;
 	private String course_url = null;
 	private String course_duration = null;
 	private String platform = null;
-	private String course_completion_date = null;
+	private Date course_completion_date = null;
 	private String upload_certificate = null;
 	private String batch = null;
 	private String course_mode = null;
@@ -152,7 +151,7 @@ import com.rasp.app.service.*;
 		platformField.setRequired(true);
 		metaData.addField(platformField);
 
-		Field course_completion_dateField = new Field("course_completion_date", "String");
+		Field course_completion_dateField = new Field("course_completion_date", "Date");
 		course_completion_dateField.setRequired(true);
 		metaData.addField(course_completion_dateField);
 
@@ -358,7 +357,7 @@ import com.rasp.app.service.*;
 		course_url = (String) map.get("course_url");
 		course_duration = (String) map.get("course_duration");
 		platform = (String) map.get("platform");
-		course_completion_date = (String) map.get("course_completion_date");
+		course_completion_date = (Date) map.get("course_completion_date");
 		upload_certificate = (String) map.get("upload_certificate");
 		batch = (String) map.get("batch");
 		course_mode = (String) map.get("course_mode");
@@ -391,11 +390,11 @@ import com.rasp.app.service.*;
 
 		Object g_creation_timeObj = map.get("g_creation_time");
 		if(g_creation_timeObj != null)
-			g_creation_time = new Long(g_creation_timeObj.toString());
+			g_creation_time = asLong(g_creation_timeObj);
 
 		Object g_modify_timeObj = map.get("g_modify_time");
 		if(g_modify_timeObj != null)
-			g_modify_time = new Long(g_modify_timeObj.toString());
+			g_modify_time = asLong(g_modify_timeObj);
 
 		Object g_soft_deleteObj = map.get("g_soft_delete");
 		if(g_soft_deleteObj != null)
@@ -411,7 +410,7 @@ import com.rasp.app.service.*;
 
 		Object archived_timeObj = map.get("archived_time");
 		if(archived_timeObj != null)
-			archived_time = new Long(archived_timeObj.toString());
+			archived_time = asLong(archived_timeObj);
 
 		Object roll_noObj = map.get("roll_no");
 		if(roll_noObj != null)
@@ -439,7 +438,7 @@ import com.rasp.app.service.*;
 
 		Object course_completion_dateObj = map.get("course_completion_date");
 		if(course_completion_dateObj != null)
-			course_completion_date = course_completion_dateObj.toString();
+			course_completion_date = asDate(course_completion_dateObj);
 
 		Object upload_certificateObj = map.get("upload_certificate");
 		if(upload_certificateObj != null)
@@ -455,7 +454,7 @@ import com.rasp.app.service.*;
 
 		Object statusObj = map.get("status");
 		if(statusObj != null)
-			status = new Boolean(statusObj.toString());
+			status = asBoolean(statusObj);
 
 		Object user_idObj = map.get("user_id");
 		if(user_idObj != null)
@@ -785,15 +784,11 @@ import com.rasp.app.service.*;
 		return platform != null;
 	}
 
-	public String getCourse_completion_date() {
+	public Date getCourse_completion_date() {
 		return course_completion_date;
 	}
 
-	public String getCourse_completion_dateEx() {
-		return course_completion_date != null ? course_completion_date : "";
-	}
-
-	public void setCourse_completion_date(String course_completion_date) {
+	public void setCourse_completion_date(Date course_completion_date) {
 		this.course_completion_date = course_completion_date;
 	}
 
@@ -938,4 +933,94 @@ import com.rasp.app.service.*;
 	public  Class<?> getMessageClass() {return StudentMessage.class;};
 	public  Class<?> getHelperClass() {return StudentHelper.class;};
 	public  Class<?> getServiceClass() {return StudentService.class;};
+
+    private static Long asLong(Object v) {
+        if (v == null) return null;
+        if (v instanceof Number) return ((Number) v).longValue();
+        if (v instanceof String) {
+            String s = ((String) v).trim();
+            if (s.isEmpty()) return null;
+            try { return Long.parseLong(s); } catch (NumberFormatException ignore) {}
+            // if someone sends "123.0"
+            try { return (long) Double.parseDouble(s); } catch (NumberFormatException ignore) {}
+        }
+        return null;
+    }
+
+    private static Boolean asBoolean(Object v) {
+        if (v == null) return null;
+        if (v instanceof Boolean) return (Boolean) v;
+        if (v instanceof Number) return ((Number) v).intValue() != 0;
+        if (v instanceof String) return Boolean.parseBoolean(((String) v).trim());
+        return null;
+    }
+
+    private static Date asDate(Object v) {
+        if (v == null) return null;
+        if (v instanceof Date) {
+            // Truncate to date (midnight) for consistency
+            java.time.LocalDate ld = ((Date) v).toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDate();
+            return java.sql.Date.valueOf(ld);
+        }
+        if (v instanceof Number) {
+            java.time.LocalDate ld = new Date(((Number) v).longValue())
+                    .toInstant()
+                    .atZone(java.time.ZoneId.systemDefault())
+                    .toLocalDate();
+            return java.sql.Date.valueOf(ld);
+        }
+        if (v instanceof String) {
+            String s = ((String) v).trim();
+            if (s.isEmpty()) return null;
+
+            // Normalize unusual spaces (e.g., U+202F) to regular space
+            s = s.replace('\u202F', ' ').replace('\u00A0', ' ');
+
+            // epoch millis string?
+            if (s.matches("\\d+")) {
+                try {
+                    java.time.LocalDate ld = new Date(Long.parseLong(s))
+                            .toInstant().atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate();
+                    return java.sql.Date.valueOf(ld);
+                } catch (NumberFormatException ignore) {}
+            }
+
+            // Try multiple textual patterns (US locale for month names)
+            java.util.Locale locale = java.util.Locale.US;
+            java.time.format.DateTimeFormatter[] fmts = new java.time.format.DateTimeFormatter[] {
+                    // "Nov 11, 2025, 12:00:00 AM"
+                    java.time.format.DateTimeFormatter.ofPattern("MMM d, uuuu, h:mm:ss a", locale),
+                    // "Nov 11, 2025"
+                    java.time.format.DateTimeFormatter.ofPattern("MMM d, uuuu", locale),
+                    // ISO "2025-11-11"
+                    java.time.format.DateTimeFormatter.ISO_LOCAL_DATE
+            };
+
+            for (java.time.format.DateTimeFormatter f : fmts) {
+                try {
+                    java.time.LocalDate ld;
+                    // If formatter includes time, parse to LocalDateTime then take date
+                    if (f.toString().contains("H") || f.toString().contains("h")) {
+                        java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(s, f);
+                        ld = ldt.toLocalDate();
+                    } else {
+                        ld = java.time.LocalDate.parse(s, f);
+                    }
+                    return java.sql.Date.valueOf(ld);
+                } catch (Exception ignore) {}
+            }
+
+            // ISO-8601 instant as a last resort
+            try {
+                java.time.LocalDate ld = java.time.Instant.parse(s)
+                        .atZone(java.time.ZoneId.systemDefault())
+                        .toLocalDate();
+                return java.sql.Date.valueOf(ld);
+            } catch (Exception ignore) {}
+        }
+        return null;
+    }
 }

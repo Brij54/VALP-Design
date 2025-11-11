@@ -6,6 +6,7 @@ import { fetchForeignResource } from "../../apis/resources";
 import { fetchEnum } from "../../apis/enum";
 import "../Upload.css"; // global layout + page styles
 //import Sidebar from "../Utils/Sidebar"; // ⬅️ import Sidebar
+const PLATFORM_OPTIONS = ["Coursera", "Udemy", "NPTEL", "Other"] as const;
 
 export type resourceMetaData = {
   resource: string;
@@ -18,7 +19,14 @@ const getCookie = (name: string): string | null => {
   if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
   return null;
 };
+const toYmd = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
 
+const todayLocalYmd = () => toYmd(new Date());
 const CreateStudent = () => {
   const [resMetaData, setResMetaData] = useState<resourceMetaData[]>([]);
   const [fields, setFields] = useState<any[]>([]);
@@ -133,15 +141,28 @@ const CreateStudent = () => {
 
   const handleCreate = async () => {
     const selectedFile = dataToSave.upload_certificate;
-    const payload = { ...dataToSave, upload_certificate: "" };
+
+    // Resolve final platform value
+    const finalPlatform =
+      dataToSave.platform === "Other"
+        ? (dataToSave.platform_other || "").trim()
+        : dataToSave.platform;
+
+    // Basic validation for "Other"
+    if (!finalPlatform) {
+      alert("Please select a platform. If you choose 'Other', enter its name.");
+      return;
+    }
+
+    // Exclude platform_other from payload; send resolved platform
+    const { platform_other, ...rest } = dataToSave;
+    const payload = { ...rest, platform: finalPlatform, upload_certificate: "" };
 
     const formData = new FormData();
     const jsonString = JSON.stringify(payload);
     const base64Encoded = btoa(jsonString);
 
     formData.append("resource", base64Encoded);
-    console.log("data while saving", jsonString);
-
     formData.append("description", "my description");
     formData.append("appId", "hostel_management_system");
     formData.append("dmsRole", "admin");
@@ -152,16 +173,13 @@ const CreateStudent = () => {
     if (selectedFile) {
       formData.append("file", selectedFile);
     }
-
     if (!accessToken) {
       throw new Error("Access token not found");
     }
 
     const response = await fetch(apiUrl, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
+      headers: { Authorization: `Bearer ${accessToken}` },
       credentials: "include",
       body: formData,
     });
@@ -273,36 +291,61 @@ const CreateStudent = () => {
 
       {/* platform */}
       <div className="formField">
-        <label className="form-label fw-bold">platform *</label>
-        <input
-          type="text"
-          className="form-control"
-          name="platform"
-          required
-          value={dataToSave["platform"] || ""}
-          onChange={(e) =>
-            setDataToSave({
-              ...dataToSave,
-              platform: e.target.value,
-            })
-          }
-        />
+         <label className="form-label fw-bold">platform *</label>
+  <select
+    className="form-select"
+    name="platform"
+    required
+    value={dataToSave["platform"] || ""}
+    onChange={(e) =>
+      setDataToSave({
+        ...dataToSave,
+        platform: e.target.value,
+      })
+    }
+  >
+    <option value="">Select platform</option>
+    {PLATFORM_OPTIONS.map((opt) => (
+      <option key={opt} value={opt}>
+        {opt}
+      </option>
+    ))}
+  </select>
+
+  {/* if "Other", show a free-text input */}
+  {dataToSave["platform"] === "Other" && (
+    <input
+      type="text"
+      className="form-control mt-2"
+      placeholder="Enter platform name"
+      name="platform_other"
+      value={dataToSave["platform_other"] || ""}
+      onChange={(e) =>
+        setDataToSave({
+          ...dataToSave,
+          platform_other: e.target.value,
+        })
+      }
+    />
+  )}
       </div>
 
       {/* course_completion_date */}
+      {/* course_completion_date */}
       <div className="formField">
-        <label className="form-label fw-bold">
-          course_completion_date *
-        </label>
+        <label className="form-label fw-bold">course_completion_date *</label>
         <input
-          type="text"
+          type="date"
           className="form-control"
           name="course_completion_date"
           required
+          // use local date for max to avoid UTC off-by-one issues
+          max={todayLocalYmd()}
           value={dataToSave["course_completion_date"] || ""}
           onChange={(e) =>
             setDataToSave({
               ...dataToSave,
+              // native date input already gives "YYYY-MM-DD"
               course_completion_date: e.target.value,
             })
           }
@@ -338,6 +381,8 @@ const CreateStudent = () => {
               ?.toLowerCase()
               .includes((searchQueries["batch"] || "").toLowerCase())
           );
+          // put these helpers above your component (or inside it before the return)
+
           return (
             <div className="dropdown">
               <button

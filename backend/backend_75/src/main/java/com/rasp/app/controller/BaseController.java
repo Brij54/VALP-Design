@@ -171,6 +171,7 @@ public class BaseController {
     }
 
     public boolean isFieldEncryptionRequired(BaseResource resource) {
+        System.out.println("resource = " + resource);
         for (Field field : resource.getMetaData().getFieldsArray()) {
             if (field.isApi_encrypt()) return true;
         }
